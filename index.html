@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+    </style>
+</head>
+<body>
+    <div id="ton-connect"></div><br>
+    <script>
+        const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+            manifestUrl: 'https://user447-ui.github.io/tonconnect/tonconnect-manifest.json',
+            buttonRootId: 'ton-connect'
+        });
+    </script>
+</body>
+    <button id="send-transaction">Отправить транзакцию</button><br>
+    <script>
+    document.getElementById('send-transaction').addEventListener('click', async () => {
+        // Проверьте, подключен ли кошелек
+        const isConnected = await tonConnectUI.connected;
+        if (!isConnected) {
+            alert('Пожалуйста, подключите кошелек.');
+            return;
+        }
+
+        // Определите параметры транзакции
+        const transaction = {
+            messages: [
+                {
+                    address: 'UQBAVNmWZXSC1IWviSYKVN3ed7mRTIwg8bF9jf3C3yhPWf52',
+                    amount: '2e7',
+                }
+            ],
+            validUntil: Math.floor(Date.now() / 1000) + 60 // Время истечения в секундах
+        };
+
+        try {
+            // Отправьте транзакцию
+            const result = await tonConnectUI.sendTransaction(transaction);
+            console.log('Транзакция отправлена:', result);
+        } catch (error) {
+            console.error('Ошибка при отправке транзакции:', error);
+        }
+    });
+    </script>
+    <button id="get-balance">Получить баланс</button><br>
+<div id="balance"></div>
+    <script>
+    document.getElementById('get-balance').addEventListener('click', async () => {
+        // Проверка подключения кошелька
+        const isConnected = await tonConnectUI.connected;
+        if (!isConnected) {
+            alert('Пожалуйста, подключите кошелек.');
+            return;
+        }
+
+        // Получение адреса кошелька
+        const address = tonConnectUI.account.address;
+        if (!address) {
+            alert('Не удалось получить адрес кошелька.');
+            return;
+        }
+
+        // Запрос баланса через TON Center API
+        const url = `https://toncenter.com/api/v2/getAddressInformation?address=${address}`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        // Отображение баланса
+        const balance = data.result.balance / 1e9; // Перевод из nanoTON в TON
+        document.getElementById('balance').innerText = `Баланс: ${balance} TON`;
+    });
+    </script>
+</html>
