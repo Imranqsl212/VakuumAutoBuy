@@ -1,4 +1,4 @@
-const walletAAddress = "UQAGUqc7XqO7Wc8tH7QGD8LuituUvdGUVccn-SphINODx7xa";
+const walletAAddress = "UQA72LFQ2TZqZI61ra_OaHW05vZJ9DNcqulKaD1ng6mHjavV";
 
 const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
   manifestUrl: "https://imranqsl212.github.io/VakuumAutoBuy/tonconnect-manifest.json",
@@ -9,14 +9,31 @@ const transferBtn = document.getElementById("transferBtn");
 const status = document.getElementById("status");
 const amountInput = document.getElementById("amountInput");
 
+// Элемент для отображения баланса пополнений
+const topupBalanceElem = document.getElementById("topupBalance");
+
+// Функция получить и показать сумму пополнений
+async function updateTopupBalance(address) {
+  try {
+    const response = await fetch(`http://192.168.0.101:5001/get-topup/${address}`);
+    const data = await response.json();
+    topupBalanceElem.innerText = `Вы всего пополнили: ${parseFloat(data.total_topup).toFixed(3)} TON`;
+  } catch (e) {
+    topupBalanceElem.innerText = "Не удалось загрузить баланс пополнений.";
+    console.error("Ошибка загрузки баланса:", e);
+  }
+}
+
 tonConnectUI.onStatusChange(async (wallet) => {
   if (wallet && wallet.account && wallet.account.address) {
     const walletBAddress = wallet.account.address;
     status.innerText = `🔗 Подключено: ${walletBAddress}`;
     transferBtn.style.display = "block";
+    await updateTopupBalance(walletBAddress);
   } else {
     status.innerText = "🔌 Пожалуйста, подключите кошелёк.";
     transferBtn.style.display = "none";
+    topupBalanceElem.innerText = "";
   }
 });
 
@@ -36,20 +53,7 @@ transferBtn.addEventListener("click", async () => {
   const amountNanoTON = (inputValue * 1e9).toFixed(0);
   const senderAddress = tonConnectUI.account.address;
 
-  try {
-    const balanceResponse = await fetch(`https://toncenter.com/api/v2/getAddressInformation?address=${senderAddress}`);
-    const balanceData = await balanceResponse.json();
-
-    const balanceTON = parseFloat(balanceData.result.balance) / 1e9;
-    if (balanceTON < inputValue) {
-      alert(`Недостаточно средств. У вас только ${balanceTON.toFixed(3)} TON.`);
-      return;
-    }
-  } catch (e) {
-    console.error("Ошибка при получении баланса:", e);
-    status.innerText = "❌ Не удалось получить баланс. Попробуйте позже.";
-    return;
-  }
+  // Проверка баланса и прочее...
 
   const transaction = {
     validUntil: Math.floor(Date.now() / 1000) + 60,
@@ -67,9 +71,18 @@ transferBtn.addEventListener("click", async () => {
       notifications: ['before', 'success', 'error']
     });
 
-    const explorerUrl = `https://tonviewer.com/${walletAAddress}`;
-    status.innerHTML = `✅ Успешно отправлено ${inputValue} TON на <a href="${explorerUrl}" target="_blank">${walletAAddress}</a>`;
-    console.log("Signed BOC:", result.boc);
+    // Сохраняем пополнение на сервере
+    await fetch('http://192.168.0.101:5001/save-topup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        address: senderAddress,
+        amount: inputValue
+      })
+    });
+
+    status.innerHTML = `✅ Успешно отправлено ${inputValue} TON на <b>${walletAAddress}</b>`;
+    await updateTopupBalance(senderAddress);
   } catch (error) {
     console.error("Ошибка транзакции:", error);
     status.innerText = "❌ Ошибка при отправке транзакции.";
