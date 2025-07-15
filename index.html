@@ -1,24 +1,52 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TON Перевод</title>
-  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
-</head>
-<body>
-  <h1>TON Wallet Перевод</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TON Перевод</title>
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      body {
+        margin: 0;
+        font-family: "Inter", sans-serif;
+        background-color: #f6f8fa;
+        color: #222;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
 
-  <div id="ton-connect"></div>
+      header {
+        justify-content: space-between;
 
-  <input type="number" id="amountInput" placeholder="Введите сумму в TON" step="0.01" min="0.01" />
-  <br><br>
-  <button id="transferBtn" style="display: none;">Перевести</button>
+        width: 100%;
+        background-color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 15px 30px;
+        display: flex;
 
-  <p id="status"></p>
-  <br><br>
-  <p id="topupBalance"></p>
+        align-items: center;
+      }
 
-  <script src="main.js"></script>
-</body>
+      .brand {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2c3e50;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand">Vakuum AutoBuy</div>
+      <div id="ton-connect"></div>
+    </header>
+    <main></main>
+
+    <script src="main.js"></script>
+  </body>
 </html>
